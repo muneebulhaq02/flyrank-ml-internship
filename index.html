@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Refresh Opportunity Scoring for Search Content Using Machine Learning — Muneeb Ul Haq</title>
+<meta name="description" content="A decision-support model for ranking web pages by refresh priority, built on the FlyRank ML Internship dataset. Random Forest classification, honest validation, and an interpretable action playbook, benchmarked against a transparent rule-based baseline." />
+<meta name="color-scheme" content="light" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="ambient-bg" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<div class="progress-rail" aria-hidden="true"><div class="progress-fill"></div></div>
+
+<a class="visually-hidden" href="#main">Skip to content</a>
+
+<header class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg class="tick" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M8 12.5l2.6 2.6L16 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      REFRESH&nbsp;SCORING
+    </a>
+    <nav aria-label="Section navigation">
+      <ul class="nav-links">
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#limitations">Limitations</a></li>
+        <li><a href="#recommendations">Recommendations</a></li>
+        <li><a href="#reproducibility">Reproducibility</a></li>
+        <li><a href="#acknowledgments">Acknowledgments</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============================== HERO / ABSTRACT ============================== -->
+  <section id="top" class="section section--hero">
+    <div class="wrap hero">
+      <div class="hero-grid">
+        <div class="hero-col">
+          <div class="hero-meta-row">
+            <span class="eyebrow"><span class="pos-badge">PAPER<span class="of">&nbsp;·&nbsp;ML&nbsp;INTERNSHIP&nbsp;CAPSTONE</span></span></span>
+          </div>
+          <h1>Refresh Opportunity Scoring for Search Content Using Machine Learning</h1>
+          <p class="byline">
+            <strong>Muneeb Ul Haq</strong>
+            <span class="dot">·</span>
+            <span>2026</span>
+            <span class="dot">·</span>
+            <span>FlyRank ML Internship Capstone</span>
+          </p>
+
+          <div class="abstract-card reveal">
+            <h2>Abstract</h2>
+            <p>
+              Maintaining search performance requires identifying which pages should be refreshed
+              before their visibility declines significantly. This project investigates whether
+              machine learning can improve the prioritization of content refresh opportunities
+              compared with a transparent rule-based baseline, using the FlyRank ML Internship
+              dataset. Feature engineering, exploratory data analysis, leakage detection, Random
+              Forest classification, and deliberately conservative validation were applied to
+              build a decision-support model for ranking pages that deserve manual review. Within
+              the evaluated split, the Random Forest model achieved stronger predictive performance
+              than the handcrafted baseline while remaining interpretable through feature
+              importance and reason codes. The final output is a ranked content-review queue
+              intended to help SEO analysts and content editors prioritize refresh decisions while
+              keeping a human responsible for the final action.
+            </p>
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn btn--primary" href="https://github.com/muneebulhaq02/flyrank-ml-internship" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub Repository
+            </a>
+            <a class="btn" href="https://github.com/muneebulhaq02/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 1.5h7L13 5v9.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-12a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 1.5V5H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5 8h6M4.5 10.2h6M4.5 12.4h3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Capstone Notebook
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-hidden="true" id="heroVisual">
+          <div class="hero-bg-anim">
+            <span class="hba-blob hba-blob--1"></span>
+            <span class="hba-blob hba-blob--2"></span>
+            <span class="hba-blob hba-blob--3"></span>
+            <svg class="hba-grid" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="hba-dots" x="0" y="0" width="26" height="26" patternUnits="userSpaceOnUse">
+                  <circle cx="1.4" cy="1.4" r="1.4" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="400" height="400" fill="url(#hba-dots)" />
+            </svg>
+          </div>
+
+          <div class="dash" id="dashTilt">
+            <div class="dash-glow"></div>
+
+            <div class="dash-head">
+              <span class="dash-dot dash-dot--r"></span>
+              <span class="dash-dot dash-dot--y"></span>
+              <span class="dash-dot dash-dot--g"></span>
+              <span class="dash-title">capstone.ipynb</span>
+              <span class="dash-badge-live"><span class="dash-live-pulse"></span>Live</span>
+            </div>
+
+            <div class="dash-body">
+              <!-- mini workflow pipeline -->
+              <div class="dash-pipeline">
+                <span class="dp-step is-done">Data</span>
+                <span class="dp-line"></span>
+                <span class="dp-step is-done">Features</span>
+                <span class="dp-line"></span>
+                <span class="dp-step is-done">Train</span>
+                <span class="dp-line"></span>
+                <span class="dp-step is-active">Rank</span>
+              </div>
+
+              <!-- precision comparison mini chart, pure CSS/SVG -->
+              <div class="dash-panel">
+                <div class="dash-panel-label">Precision &mdash; baseline vs. model</div>
+                <div class="dash-chart">
+                  <div class="dc-bar-col">
+                    <span class="dc-val"><span class="countup" data-target="0.5316" data-decimals="2">0.53</span></span>
+                    <div class="dc-bar dc-bar--muted" style="--h:53%"></div>
+                    <span class="dc-name">Baseline</span>
+                  </div>
+                  <div class="dc-bar-col">
+                    <span class="dc-val dc-val--accent"><span class="countup" data-target="0.6996" data-decimals="2">0.70</span></span>
+                    <div class="dc-bar dc-bar--accent" style="--h:70%"></div>
+                    <span class="dc-name">Random&nbsp;Forest</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- feature importance horizontal bars -->
+              <div class="dash-panel">
+                <div class="dash-panel-label">Feature importance</div>
+                <div class="dash-hbars">
+                  <div class="dh-row">
+                    <span class="dh-name">impressions_90d</span>
+                    <span class="dh-track"><span class="dh-fill" style="--w:90%"></span></span>
+                  </div>
+                  <div class="dh-row">
+                    <span class="dh-name">avg_position</span>
+                    <span class="dh-track"><span class="dh-fill" style="--w:84%"></span></span>
+                  </div>
+                  <div class="dh-row">
+                    <span class="dh-name">content_age_days</span>
+                    <span class="dh-track"><span class="dh-fill" style="--w:59%"></span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- metric + status cards -->
+              <div class="dash-grid">
+                <div class="dash-card">
+                  <span class="dc-num"><span class="countup" data-target="69.05" data-decimals="1" data-suffix="%">69.1%</span></span>
+                  <span class="dc-label">Accuracy</span>
+                </div>
+                <div class="dash-card">
+                  <span class="dc-num"><span class="countup" data-target="0.7248" data-decimals="3">0.725</span></span>
+                  <span class="dc-label">F1 Score</span>
+                </div>
+                <div class="dash-card">
+                  <span class="dc-num"><span class="countup" data-target="30" data-decimals="0" data-suffix="k">30k</span></span>
+                  <span class="dc-label">Pages ranked</span>
+                </div>
+                <div class="dash-card dash-card--amber">
+                  <span class="dc-num">P1</span>
+                  <span class="dc-label">Priority queue</span>
+                </div>
+              </div>
+
+              <div class="dash-tags">
+                <span class="dash-tag dash-tag--blue">Random Forest</span>
+                <span class="dash-tag dash-tag--green">Reviewed&nbsp;&check;</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-pill dash-pill--1">Feature:&nbsp;impressions_90d</div>
+          <div class="dash-pill dash-pill--2">Reviewed&nbsp;&check;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== INTRODUCTION ============================== -->
+  <section id="introduction" class="section">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">01<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Introduction</h2>
+      </div>
+      <div class="copy-grid copy-grid--split">
+        <div class="prose reveal">
+          <p>
+            Most websites accumulate far more published pages than any editorial team can
+            realistically re-review on a regular schedule. Search visibility is not static:
+            pages that once ranked well can lose impressions and clicks as competitors publish
+            newer material, as user intent shifts, or as the page itself ages without an
+            update. Left unmanaged, this decline is usually noticed only after it has already
+            cost meaningful traffic.
+          </p>
+          <p>
+            The business problem this project addresses is prioritization under limited
+            capacity. Editorial teams do not need a system that tells them a page is
+            <em>either</em> healthy <em>or</em> declining &mdash; binary labels do not tell an editor where
+            to start on a Monday morning. What is useful is a ranked list: which pages, out of
+            thousands, are the best use of a reviewer's next hour.
+          </p>
+          <p>
+            The research question this paper investigates is direct: <strong>can machine
+            learning improve the identification of content that should be reviewed for
+            refreshing, compared with a simple, transparent rule-based baseline?</strong> A
+            ranking model is useful here specifically because it can combine several weak,
+            individually noisy search signals &mdash; impressions, click-through rate, average
+            position, content age &mdash; into a single, ordered priority score, something a fixed
+            threshold rule struggles to do well.
+          </p>
+          <p>
+            The decision this model supports is narrow and deliberately so: which pages a human
+            editor should look at first. It does not publish, unpublish, or rewrite anything on
+            its own. The output is a decision-support tool, not an automated content pipeline.
+          </p>
+        </div>
+        <aside class="reveal">
+          <div class="callout">
+            <p><strong>Unit of analysis</strong> &mdash; one row represents one content page.</p>
+            <p><strong>Decision supported</strong> &mdash; which pages to send to editorial review first.</p>
+            <p><strong>Cost of error</strong> &mdash; moderate in both directions: a false positive wastes
+            review time; a false negative delays a page that genuinely needs attention.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DATA ============================== -->
+  <section id="data" class="section section--alt">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">02<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Data</h2>
+        <p class="lede">A public-safe, anonymized release built for this internship &mdash; no
+        client names, URLs, or private queries are present anywhere in the dataset or in this
+        paper.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p>
+          This project uses the <strong>FlyRank ML Internship starter dataset</strong>, an
+          anonymized slice of Google Search Console and Google Analytics activity aggregated
+          over a trailing 90-day performance window. Each row represents a single content page;
+          the release covers 32 pseudonymized clients so that no individual page can be traced
+          back to a real site.
+        </p>
+      </div>
+
+      <div class="stat-strip reveal">
+        <div class="stat"><span class="num">30,000</span><span class="label">rows (pages)</span></div>
+        <div class="stat"><span class="num">44</span><span class="label">columns released</span></div>
+        <div class="stat"><span class="num">32</span><span class="label">pseudonymized clients</span></div>
+        <div class="stat"><span class="num">90d</span><span class="label">trailing performance window</span></div>
+      </div>
+
+      <div class="copy-grid copy-grid--split reveal">
+        <div>
+          <h3 class="sub-title">Numeric features</h3>
+          <div class="tag-row">
+            <span class="tag">impressions_90d</span>
+            <span class="tag">clicks_90d</span>
+            <span class="tag">ctr</span>
+            <span class="tag">avg_position</span>
+            <span class="tag">content_age_days</span>
+            <span class="tag">search_volume</span>
+            <span class="tag">competition</span>
+            <span class="tag">cpc</span>
+            <span class="tag">word_count</span>
+            <span class="tag">char_count</span>
+            <span class="tag">engagement_rate</span>
+            <span class="tag">scroll_rate</span>
+            <span class="tag">ai_traffic_pct</span>
+          </div>
+          <h3 class="sub-title" style="margin-top:1.4rem;">Categorical features (one-hot encoded)</h3>
+          <div class="tag-row">
+            <span class="tag">content_type</span>
+            <span class="tag">main_intent</span>
+            <span class="tag">competition_level</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="sub-title">Excluded columns</h3>
+          <div class="tag-row">
+            <span class="tag tag--excluded">trend_pct</span>
+            <span class="tag tag--excluded">trend_direction</span>
+            <span class="tag tag--excluded">is_declining_label</span>
+            <span class="tag tag--excluded">client_id</span>
+            <span class="tag tag--excluded">content_id</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="prose reveal" style="margin-top:1.75rem;">
+        <p>
+          The excluded columns fall into two groups. <code>trend_direction</code>,
+          <code>trend_pct</code>, and <code>is_declining_label</code> were removed because they
+          define or directly encode the prediction target itself &mdash; keeping any of them as a
+          feature would let the model see the answer before making its prediction.
+          <code>client_id</code> and <code>content_id</code> are pseudonymous identifiers useful
+          only for grouping and joins, never as predictive signals, so they were excluded from
+          the feature set as well. No client-identifying information, URLs, or search queries
+          were used at any stage of this analysis.
+        </p>
+        <p>
+          Preprocessing was intentionally simple: the three categorical fields
+          (<code>content_type</code>, <code>main_intent</code>, <code>competition_level</code>)
+          were one-hot encoded, and any remaining missing numeric values were filled with zero
+          before training &mdash; for example, <code>search_volume</code> is blank for roughly
+          2,500 rows that had no matched keyword data. Every feature above is available at the
+          same point in time an editor would actually be looking at the page, which keeps the
+          model's inputs honest.
+        </p>
+      </div>
+
+      <!-- Figures: summary statistics + 4 distributions -->
+      <figure class="fig-card reveal">
+        <div class="fig-media">
+          <img src="work/figures/summary_statistics.png" alt="Table of summary statistics for impressions_90d, clicks_90d, search_volume, and content_age_days" loading="lazy" width="1200" height="360" />
+        </div>
+        <figcaption>
+          <span class="fig-num">Figure 1</span>
+          <p class="fig-caption-text">Summary statistics for four core signals &mdash; impressions_90d, clicks_90d, search_volume, and content_age_days &mdash; across all 30,000 pages in the released dataset.</p>
+          <p class="fig-interp"><strong>Interpretation:</strong> the gap between each column's mean and its 75th percentile is large across all four signals, which is the first indication that this dataset is heavy-tailed: most pages sit far below the average, while a small number of high-traffic pages pull the mean upward.</p>
+        </figcaption>
+      </figure>
+
+      <div class="fig-pair">
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/impressions_90d_distribution.png" alt="Histogram of impressions_90d, heavily right-skewed" loading="lazy" width="900" height="600" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 2</span>
+            <p class="fig-caption-text">Distribution of <code>impressions_90d</code> across the released dataset.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> impressions are strongly right-skewed &mdash; the large majority of pages receive a modest number of impressions, while a long tail of pages receives disproportionately more. This skew is why the modeling pipeline treats impressions as a ranking signal rather than assuming a normal distribution.</p>
+          </figcaption>
+        </figure>
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/clicks_90d_distribution.png" alt="Histogram of clicks_90d, heavily right-skewed" loading="lazy" width="900" height="600" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 3</span>
+            <p class="fig-caption-text">Distribution of <code>clicks_90d</code> across the released dataset.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> clicks follow the same shape as impressions, only more extreme &mdash; most pages record very few clicks in the 90-day window, consistent with a dataset dominated by long-tail, lower-visibility content rather than a handful of flagship pages.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="fig-pair" style="margin-top:1.5rem;">
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/search_volume_distribution.png" alt="Histogram of search_volume, heavily right-skewed" loading="lazy" width="900" height="600" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 4</span>
+            <p class="fig-caption-text">Distribution of <code>search_volume</code>, the estimated monthly demand for each page's target keyword.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> keyword demand is concentrated near zero for most pages, with a small number of pages targeting high-volume terms. This mirrors the impressions and clicks distributions, suggesting demand potential is a meaningful, correlated signal rather than noise.</p>
+          </figcaption>
+        </figure>
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/content_age_days_distribution.png" alt="Histogram of content_age_days, multi-modal across roughly 90 to 560 days" loading="lazy" width="900" height="600" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 5</span>
+            <p class="fig-caption-text">Distribution of <code>content_age_days</code>, the number of days since each page was first published.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> unlike the traffic-based signals, content age is multi-modal rather than skewed &mdash; visible clusters suggest content was published in batches over time, rather than continuously. Every page in this release is at least 90 days old, consistent with the dataset's focus on already-indexed, evaluable content.</p>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== METHODOLOGY ============================== -->
+  <section id="methodology" class="section">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">03<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Methodology</h2>
+        <p class="lede">A transparent baseline first, honest validation second, and a leakage
+        audit before any result is trusted.</p>
+      </div>
+
+      <div class="copy-grid copy-grid--split">
+        <div class="prose reveal">
+          <h3 class="sub-title">Label definition</h3>
+          <p>
+            The model predicts a binary label already supplied in the starter dataset:
+            <code>is_declining_label</code>, which is <code>1</code> when
+            <code>trend_direction == "down"</code> (a drop of more than 20% in impressions over
+            the most recent 30 days versus the prior 30 days) and <code>0</code> otherwise.
+            Within this release, 54.2% of pages carry the positive label &mdash; a base rate worth
+            keeping in mind when reading the accuracy figures in the Results section.
+          </p>
+          <h3 class="sub-title">Baseline</h3>
+          <p>
+            Before any model was trained, a transparent rule-based baseline was built. Four
+            signals &mdash; impressions, content age, average position, and CTR &mdash; are each
+            compared against their dataset-wide median (impressions/age/position above the
+            median, CTR below it counts as a "declining" signal). A page is flagged by the
+            baseline whenever at least three of the four signals point toward decline. The rule
+            is fully readable by a non-technical stakeholder, which is precisely what makes it a
+            fair comparison point.
+          </p>
+          <h3 class="sub-title">Model &amp; validation</h3>
+          <p>
+            A <strong>Random Forest classifier</strong> (200 trees, <code>random_state=42</code>)
+            was trained on 16 engineered feature groups &mdash; 13 numeric signals plus three
+            one-hot encoded categorical fields. The dataset was split 80/20 into train and
+            test sets using a stratified random split on the same seed, so the baseline and the
+            model are compared on the exact same held-out pages.
+          </p>
+        </div>
+
+        <aside class="reveal">
+          <div class="mini-card" style="margin-bottom:1rem;">
+            <span class="k">Why Random Forest</span>
+            <p>Handles nonlinear relationships between signals, requires limited preprocessing, performs well on mixed numeric features, and exposes feature importance for interpretability.</p>
+          </div>
+          <div class="mini-card" style="margin-bottom:1rem;">
+            <span class="k">Random seed</span>
+            <p>random_state = 42, used consistently for the train/test split and the classifier, so the reported numbers are reproducible from a fresh clone.</p>
+          </div>
+          <div class="mini-card">
+            <span class="k">Core assumption</span>
+            <p>Recent search-performance signals are informative enough to rank refresh priority, even though they cannot establish why a page is declining.</p>
+          </div>
+        </aside>
+      </div>
+
+      <h3 class="sub-title reveal" style="margin-top:2.5rem;">Pipeline</h3>
+      <ol class="timeline reveal" style="list-style:none; padding-left:2.2rem;">
+        <li class="t-step" data-n="1">
+          <h4>Feature engineering</h4>
+          <p>Thirteen numeric signals plus three categorical fields (one-hot encoded) selected; remaining missing numerics filled with zero.</p>
+        </li>
+        <li class="t-step" data-n="2">
+          <h4>Baseline construction</h4>
+          <p>Transparent majority-vote rule: a page is flagged if at least three of four median-thresholded signals indicate decline.</p>
+        </li>
+        <li class="t-step" data-n="3">
+          <h4>Leakage audit</h4>
+          <p>Label-derived columns, trend fields, and client/content identifiers explicitly removed from the feature set.</p>
+        </li>
+        <li class="t-step" data-n="4">
+          <h4>Model training</h4>
+          <p>Random Forest Classifier fit on the training split; same features available to the baseline logic.</p>
+        </li>
+        <li class="t-step" data-n="5">
+          <h4>Evaluation</h4>
+          <p>Accuracy, precision, recall, and F1 computed on the identical held-out test split for a fair comparison.</p>
+        </li>
+      </ol>
+
+      <div class="fig-pair" style="margin-top:2.25rem;">
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/baseline_distribution.png" alt="Histogram of the rule-based baseline score across all pages" loading="lazy" width="1000" height="750" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 5b</span>
+            <p class="fig-caption-text">Distribution of the rule-based baseline score across the full dataset.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> baseline scores cluster in the lower half of the theoretical 0&ndash;4 range, heavily concentrated between 1.0 and 1.5, and tapering off by around 2.4 with almost no pages below 1.0. This continuous score is a separate, exploratory view of the same four signals; the Results section's baseline metrics use a stricter median-threshold, majority-vote version of the rule rather than this continuous score directly.</p>
+          </figcaption>
+        </figure>
+        <figure class="fig-card reveal">
+          <div class="fig-media">
+            <img src="work/figures/baseline_top10.png" alt="Bar chart of the ten highest rule-based baseline scores by content identifier" loading="lazy" width="1000" height="750" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 5c</span>
+            <p class="fig-caption-text">The ten pages with the highest rule-based baseline score, identified by pseudonymous content ID.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> the top decile all reach the maximum baseline score of 4.0, meaning the rule alone cannot distinguish priority within this group &mdash; a gap the Random Forest model's continuous, learned scoring is better positioned to resolve.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="callout reveal" style="margin-top:2.25rem;">
+        <p><strong>Leakage checks.</strong> Label-derived columns, trend columns, and
+        pseudonymous client/content identifiers were excluded before training. This is a
+        page-level stratified split rather than a client-grouped split; because a single client
+        can contribute more than one page, some pages from the same client may appear in both
+        the train and test sets. This is flagged explicitly in Limitations rather than
+        smoothed over.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== RESULTS ============================== -->
+  <section id="results" class="section section--alt">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">04<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Results</h2>
+        <p class="lede">All numbers below are computed on the same held-out test split (n = 6,000 pages) and should be read against a 54.2% positive base rate.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p>
+          The Random Forest model was evaluated on the same 20% held-out split used to describe
+          the baseline rule, so the comparison below reflects the same pages under the same
+          conditions.
+        </p>
+      </div>
+
+      <div class="table-wrap reveal">
+        <table>
+          <caption class="visually-hidden">Model performance versus baseline reference</caption>
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col" class="num">Accuracy</th>
+              <th scope="col" class="num">Precision</th>
+              <th scope="col" class="num">Recall</th>
+              <th scope="col" class="num">F1 score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Rule-based baseline</th>
+              <td class="num"><span class="countup" data-target="0.4765" data-decimals="4">0.4765</span></td>
+              <td class="num"><span class="countup" data-target="0.5316" data-decimals="4">0.5316</span></td>
+              <td class="num"><span class="countup" data-target="0.2875" data-decimals="4">0.2875</span></td>
+              <td class="num"><span class="countup" data-target="0.3732" data-decimals="4">0.3732</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Random Forest</th>
+              <td class="num"><span class="countup" data-target="0.6905" data-decimals="4">0.6905</span></td>
+              <td class="num"><span class="countup" data-target="0.6996" data-decimals="4">0.6996</span></td>
+              <td class="num"><span class="countup" data-target="0.7518" data-decimals="4">0.7518</span></td>
+              <td class="num"><span class="countup" data-target="0.7248" data-decimals="4">0.7248</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note reveal">Both rows are computed on the same held-out split. The Random Forest model outperforms the rule-based baseline on every metric &mdash; most notably recall (0.752 vs. 0.288), meaning the baseline misses the large majority of genuinely declining pages that the model successfully flags.</p>
+
+      <figure class="fig-card reveal">
+        <div class="fig-media">
+          <img src="work/figures/model_vs_baseline.png" alt="Bar chart comparing precision of the rule-based baseline against the Random Forest model" loading="lazy" width="1000" height="750" />
+        </div>
+        <figcaption>
+          <span class="fig-num">Figure 6</span>
+          <p class="fig-caption-text">Precision of the rule-based baseline compared with the Random Forest model, evaluated on the same split.</p>
+          <p class="fig-interp"><strong>Interpretation:</strong> the Random Forest model shows a visibly higher precision bar than the baseline. This suggests that combining multiple search signals through a learned model produces a directionally better-ordered priority list than the fixed-weight rule, though both approaches are evaluated on a single dataset snapshot.</p>
+        </figcaption>
+      </figure>
+
+      <div class="copy-grid copy-grid--split" style="margin-top:1rem;">
+        <div>
+          <h3 class="sub-title reveal">Confusion matrix</h3>
+          <div class="table-wrap reveal">
+            <table>
+              <caption class="visually-hidden">Confusion matrix on the held-out test split</caption>
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col" class="num">Predicted negative</th>
+                  <th scope="col" class="num">Predicted positive</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Actual negative</th>
+                  <td class="num"><span class="countup" data-target="1698" data-decimals="0" data-grouped>1,698</span></td>
+                  <td class="num"><span class="countup" data-target="1050" data-decimals="0" data-grouped>1,050</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Actual positive</th>
+                  <td class="num"><span class="countup" data-target="807" data-decimals="0">807</span></td>
+                  <td class="num"><span class="countup" data-target="2445" data-decimals="0" data-grouped>2,445</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note reveal">n = 6,000 held-out pages. Recall is higher than precision, meaning the model catches most genuinely declining pages, at the cost of also flagging a meaningful share of stable pages for review.</p>
+        </div>
+
+        <figure class="fig-card reveal" style="margin:0;">
+          <div class="fig-media">
+            <img src="work/figures/confusion_matrix.png" alt="Confusion matrix heatmap for the Random Forest classifier" loading="lazy" width="1000" height="750" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 7</span>
+            <p class="fig-caption-text">Confusion matrix for the Random Forest classifier on the held-out split.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> the darker diagonal cells show that most pages are classified correctly in both directions, while the off-diagonal cells confirm the model is somewhat more prone to false positives (flagging a stable page) than false negatives (missing a declining one) &mdash; a conservative-leaning error pattern that fits a review-recommendation tool.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3 class="sub-title reveal" style="margin-top:2.5rem;">Feature importance</h3>
+      <div class="copy-grid copy-grid--split">
+        <div class="table-wrap reveal">
+          <table>
+            <caption class="visually-hidden">Random Forest feature importance</caption>
+            <thead>
+              <tr><th scope="col">Feature</th><th scope="col" class="num">Importance</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">impressions_90d</th><td class="num"><span class="countup" data-target="0.1702" data-decimals="3">0.170</span></td></tr>
+              <tr><th scope="row">avg_position</th><td class="num"><span class="countup" data-target="0.1579" data-decimals="3">0.158</span></td></tr>
+              <tr><th scope="row">content_age_days</th><td class="num"><span class="countup" data-target="0.1112" data-decimals="3">0.111</span></td></tr>
+              <tr><th scope="row">char_count</th><td class="num"><span class="countup" data-target="0.0891" data-decimals="3">0.089</span></td></tr>
+              <tr><th scope="row">word_count</th><td class="num"><span class="countup" data-target="0.0863" data-decimals="3">0.086</span></td></tr>
+              <tr><th scope="row">scroll_rate</th><td class="num"><span class="countup" data-target="0.0690" data-decimals="3">0.069</span></td></tr>
+              <tr><th scope="row">ctr</th><td class="num"><span class="countup" data-target="0.0649" data-decimals="3">0.065</span></td></tr>
+              <tr><th scope="row">clicks_90d</th><td class="num"><span class="countup" data-target="0.0514" data-decimals="3">0.051</span></td></tr>
+              <tr><th scope="row">search_volume</th><td class="num"><span class="countup" data-target="0.0427" data-decimals="3">0.043</span></td></tr>
+              <tr><th scope="row">competition</th><td class="num"><span class="countup" data-target="0.0410" data-decimals="3">0.041</span></td></tr>
+            </tbody>
+          </table>
+          <p class="table-note">Showing the ten most predictive of 20 encoded feature columns (13 numeric signals plus one-hot encoded categorical groups); the remaining ten &mdash; engagement_rate, cpc, ai_traffic_pct, and individual content-type / intent / competition-level categories &mdash; each contribute under 0.035.</p>
+        </div>
+        <figure class="fig-card reveal" style="margin:0;">
+          <div class="fig-media">
+            <img src="work/figures/feature_importance.png" alt="Horizontal bar chart of Random Forest feature importance, led by impressions_90d, avg_position, and content_age_days" loading="lazy" width="1000" height="620" />
+          </div>
+          <figcaption>
+            <span class="fig-num">Figure 8</span>
+            <p class="fig-caption-text">Random Forest feature importance, highlighting the top predictive signals.</p>
+            <p class="fig-interp"><strong>Interpretation:</strong> impressions, average position, and content age are consistently the strongest predictors, together accounting for just under half of total importance. Content-length signals (char_count, word_count) rank next, ahead of engagement measures like scroll_rate and ctr. This is directionally sensible: pages that are already visible, ranking imperfectly, aging, and thin on content are the pages most associated with a declining trend. Importance should be read as association, not causation.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+
+      <div class="prose reveal" style="margin-top:2rem;">
+        <h3 class="sub-title">Error analysis</h3>
+        <p>
+          The model's errors lean toward false positives (1,050 stable pages flagged for
+          review) more than false negatives (807 declining pages missed). For a decision-support
+          tool feeding a human review queue, this is a reasonable trade-off: an unnecessary
+          review costs editor time, while a missed decline can compound before anyone notices.
+          The recall of 0.7518 indicates the model surfaces roughly three out of every four
+          genuinely declining pages within the evaluated split, compared with just 0.2875 for
+          the rule-based baseline on the same pages.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== LIMITATIONS ============================== -->
+  <section id="limitations" class="section">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">05<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Limitations</h2>
+        <p class="lede">What this work can support, and what it explicitly cannot claim.</p>
+      </div>
+
+      <div class="limits-grid reveal">
+        <div class="mini-card limit-card">
+          <span class="n">01</span>
+          <p><strong>Observational data.</strong> Every signal here is observational search
+          performance, not a controlled experiment. The model finds statistical association,
+          not a causal explanation for why a page is declining.</p>
+        </div>
+        <div class="mini-card limit-card">
+          <span class="n">02</span>
+          <p><strong>Anonymized dataset.</strong> Anonymization removes contextual factors &mdash;
+          topic, competitor activity, editorial history &mdash; that may materially influence search
+          performance but are not present in this release.</p>
+        </div>
+        <div class="mini-card limit-card">
+          <span class="n">03</span>
+          <p><strong>Generalization.</strong> Evaluation is based on a single released dataset
+          snapshot. Performance on future data, other verticals, or other search engines has
+          not been validated and should not be assumed.</p>
+        </div>
+        <div class="mini-card limit-card">
+          <span class="n">04</span>
+          <p><strong>Split design.</strong> The train/test split is stratified at the page
+          level, not grouped by client. A client-holdout evaluation, recommended in the
+          project's own data dictionary, would be a stronger test of generalization across
+          clients and is left to future work.</p>
+        </div>
+        <div class="mini-card limit-card">
+          <span class="n">05</span>
+          <p><strong>Potential bias.</strong> Pages with more search history naturally provide
+          more signal; newer or lower-traffic pages may be systematically harder for the model
+          to score confidently.</p>
+        </div>
+        <div class="mini-card limit-card">
+          <span class="n">06</span>
+          <p><strong>Decision-support only.</strong> The model does not publish, unpublish, or
+          edit content. It ranks review priority; a human remains responsible for every action
+          taken on a page.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal" style="margin-top:2.25rem;">
+        <h3 class="sub-title">Future work</h3>
+        <p>
+          A time-aware validation split (training on earlier periods, testing on later ones),
+          a client-grouped holdout, additional editorial and content-quality signals, and
+          periodic retraining as search behavior shifts would each strengthen the honesty and
+          durability of this model's recommendations.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== RANKED RECOMMENDATIONS ============================== -->
+  <section id="recommendations" class="section section--alt">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">06<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Ranked Recommendations</h2>
+        <p class="lede">The content action playbook &mdash; how an editor turns the model's output into a work queue.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p>
+          The model produces a ranked list of pages most likely to benefit from human review,
+          alongside a reason code explaining <em>why</em> each page was placed at its priority
+          level. These recommendations are intended to support editorial decision-making, not
+          to automate content changes.
+        </p>
+      </div>
+
+      <ol class="priority-list reveal" style="list-style:none; padding-left:0;">
+        <li class="priority-item priority-item--1">
+          <span class="p-num">1</span>
+          <div>
+            <h4>Refresh content immediately</h4>
+            <p><strong>Reason code:</strong> high impressions with declining performance. These pages already receive search visibility, so improving them offers the greatest near-term opportunity.</p>
+          </div>
+        </li>
+        <li class="priority-item">
+          <span class="p-num">2</span>
+          <div>
+            <h4>Review metadata</h4>
+            <p><strong>Reason code:</strong> visible pages with a relatively low click-through rate. Title tags and meta descriptions are the first, lowest-effort thing to test.</p>
+          </div>
+        </li>
+        <li class="priority-item">
+          <span class="p-num">3</span>
+          <div>
+            <h4>Monitor performance</h4>
+            <p><strong>Reason code:</strong> a moderate model score. These pages stay under observation and move into the refresh queue only if decline continues in a future reporting period.</p>
+          </div>
+        </li>
+        <li class="priority-item">
+          <span class="p-num">4</span>
+          <div>
+            <h4>No immediate action</h4>
+            <p><strong>Reason code:</strong> strong overall search performance. Continue routine monitoring rather than editing.</p>
+          </div>
+        </li>
+      </ol>
+
+      <figure class="fig-card reveal">
+        <div class="fig-media">
+          <img src="work/figures/recommended_actions.png" alt="Bar chart of the number of pages assigned to each recommended action across the full dataset" loading="lazy" width="1000" height="620" />
+        </div>
+        <figcaption>
+          <span class="fig-num">Figure 9</span>
+          <p class="fig-caption-text">Number of pages assigned to each recommended action across the full 30,000-page dataset.</p>
+          <p class="fig-interp"><strong>Interpretation:</strong> the largest single group is recommended for search-position or visibility improvements rather than a full content refresh, with smaller groups earmarked for CTR-focused metadata work, ongoing monitoring, and full refresh. Most pages fall short of requiring a full rewrite &mdash; a useful finding on its own, since it means editorial effort can concentrate on a manageable minority.</p>
+        </figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <h3 class="sub-title">Intended users, human review, and no-go cases</h3>
+        <p>
+          The queue is intended for SEO analysts and content editors making weekly or monthly
+          prioritization calls. A page should not be edited, merged, or removed purely because
+          the model placed it in Priority 1 &mdash; a human reviewer should confirm the recommendation
+          against context the model cannot see (recent edits, seasonal topics, or upcoming
+          campaigns) before taking action. Pages with very low search volume or very recent
+          publication dates are reasonable no-go cases for immediate refresh, regardless of
+          model score, and should default to monitoring instead.
+        </p>
+        <h3 class="sub-title">Monitoring</h3>
+        <p>
+          Because this evaluation reflects a single 90-day snapshot, the ranked queue should be
+          regenerated on a recurring cadence (for example, each time a new 90-day window closes)
+          rather than treated as a one-time output. Re-running the notebook against a fresh
+          export keeps the recommendations aligned with current search behavior.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== REPRODUCIBILITY ============================== -->
+  <section id="reproducibility" class="section">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="pos-badge">07<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin-top:0.6em;">Reproducibility</h2>
+      </div>
+
+      <div class="copy-grid copy-grid--split">
+        <div class="prose reveal">
+          <p>
+            Every number in this paper is produced by the capstone notebook, and can be
+            regenerated from a clean clone of the repository.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr><th scope="row">Repository</th><td><a href="https://github.com/muneebulhaq02/flyrank-ml-internship" target="_blank" rel="noopener">github.com/muneebulhaq02/flyrank-ml-internship</a></td></tr>
+                <tr><th scope="row">Notebook</th><td><a href="https://github.com/muneebulhaq02/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb" target="_blank" rel="noopener">work/notebooks/capstone.ipynb</a></td></tr>
+                <tr><th scope="row">Dataset</th><td><code>data/raw/content_refresh_anonymized.csv</code></td></tr>
+                <tr><th scope="row">Random seed</th><td class="num">42 (train/test split and classifier)</td></tr>
+                <tr><th scope="row">Model</th><td>RandomForestClassifier, 200 estimators, scikit-learn</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <aside class="reveal">
+          <div class="mini-card">
+            <span class="k">Method summary</span>
+            <p>Load the anonymized CSV &rarr; engineer 16 feature groups (13 numeric, 3 one-hot categorical) &rarr; build the rule-based baseline &rarr; stratified 80/20 split (seed 42) &rarr; train Random Forest (200 trees, seed 42) &rarr; evaluate on the held-out split &rarr; export ranked recommendations and figures.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== ACKNOWLEDGMENTS ============================== -->
+  <section id="acknowledgments" class="section section--alt">
+    <div class="wrap">
+      <div class="section-head reveal" style="text-align:center;">
+        <span class="pos-badge">08<span class="of">&nbsp;/&nbsp;09</span></span>
+        <h2 class="section-title" style="margin:0.6em auto 0; max-width:none;">Acknowledgments</h2>
+      </div>
+      <div class="ack-block reveal">
+        <p>Built on the <a href="https://flyrank.ai" target="_blank" rel="noopener">FlyRank</a> ML Internship dataset.</p>
+        <p>With thanks to the FlyRank Machine Learning Internship program for the structured
+        dataset release, methodology guidance, and review process that made this capstone
+        possible.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================== FOOTER ============================== -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-row">
+      <ul class="footer-links">
+        <li>
+          <a class="footer-link footer-link--github" href="https://github.com/muneebulhaq02" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </a>
+        </li>
+        <li>
+          <a class="footer-link footer-link--linkedin" href="https://linkedin.com/in/muneeb-ul-haq02" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M14.82 0H1.18C.53 0 0 .52 0 1.16v13.68C0 15.48.53 16 1.18 16h13.64c.65 0 1.18-.52 1.18-1.16V1.16C16 .52 15.47 0 14.82 0zM4.75 13.63H2.4V6h2.35v7.63zM3.57 4.96c-.76 0-1.37-.61-1.37-1.36 0-.75.61-1.36 1.37-1.36.75 0 1.36.61 1.36 1.36 0 .75-.61 1.36-1.36 1.36zm10.06 8.67h-2.35V9.9c0-.86-.02-1.97-1.2-1.97-1.2 0-1.39.94-1.39 1.9v3.8H6.35V6h2.26v1.04h.03c.31-.6 1.08-1.23 2.23-1.23 2.39 0 2.83 1.57 2.83 3.62v4.2z"/></svg>
+            LinkedIn
+          </a>
+        </li>
+        <li>
+          <a class="footer-link footer-link--email" href="mailto:muneebulhaq02@gmail.com">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M2 4.5l6 4.5 6-4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Email
+          </a>
+        </li>
+      </ul>
+      <p class="copyright">&copy; <span data-year>2026</span> Muneeb Ul Haq. Built with plain HTML, CSS, and JavaScript.</p>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<div class="lightbox" role="dialog" aria-modal="true" aria-label="Expanded figure view">
+  <button class="lightbox-close" type="button" aria-label="Close expanded figure">
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+  </button>
+  <img src="" alt="" />
+  <p class="lightbox-cap"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
